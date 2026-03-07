@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
+    allowedHosts: ['love-wiit.onrender.com'],
     https: httpsConfig
   }
 })
