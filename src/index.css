@@ -371,14 +371,7 @@ body {
   }
 }
 
-/* Tail Skins */
-.cat-black .cat-tail {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 5' shape-rendering='crispEdges'><path d='M1 1h3v1h1v2H4V3H1V1z' fill='%23000'/><path d='M1 2h3v1H1z' fill='%23222'/></svg>");
-}
 
-.cat-white .cat-tail {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 5' shape-rendering='crispEdges'><path d='M1 1h3v1h1v2H4V3H1V1z' fill='%23ccc'/><path d='M1 2h3v1H1z' fill='%23fff'/></svg>");
-}
 
 .cat-gray .cat-tail {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 5' shape-rendering='crispEdges'><path d='M1 1h3v1h1v2H4V3H1V1z' fill='%23444'/><path d='M1 2h3v1H1z' fill='%23888'/></svg>");
