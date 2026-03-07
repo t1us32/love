@@ -17,6 +17,15 @@ const PHRASES = [
 
 const GALLERY = [
   { id: 'cat_garden', name: 'Сад котиков', cost: 100, src: '/gallery/cat_garden.png' },
+  { id: 'photo_1', name: 'Фото 1', cost: 150, src: '/gallery/photo_1_2026-03-08_00-28-38.jpg' },
+  { id: 'photo_2', name: 'Фото 2', cost: 200, src: '/gallery/photo_2_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_3', name: 'Фото 3', cost: 250, src: '/gallery/photo_3_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_4', name: 'Фото 4', cost: 300, src: '/gallery/photo_4_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_5', name: 'Фото 5', cost: 350, src: '/gallery/photo_5_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_6', name: 'Фото 6', cost: 400, src: '/gallery/photo_6_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_7', name: 'Фото 7', cost: 450, src: '/gallery/photo_7_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_8', name: 'Фото 8', cost: 500, src: '/gallery/photo_8_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_9', name: 'Фото 9', cost: 550, src: '/gallery/photo_9_2026-03-08_00-29-27.jpg' },
 ];
 
 // Retro sound generator
@@ -101,6 +110,7 @@ function App() {
   const [catX, setCatX] = useState(50);
   const [catFlip, setCatFlip] = useState(1); // 1 = right, -1 = left
   const [isCatCatching, setIsCatCatching] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(true);
 
   // Upgrades state
   const [spawnLevel, setSpawnLevel] = useState(0);
@@ -249,55 +259,65 @@ function App() {
 
   return (
     <div className="game-container">
-      <div className="ui-panel">
-        <h1 style={{ fontSize: '12px', marginBottom: '8px' }}>HEART DROP</h1>
-        <p style={{ fontSize: '10px', marginBottom: '10px' }}>SCORE: {score}</p>
-
-        <div className="shop-list">
-          {!hasCat ? (
-            <button className="shop-btn" onClick={buyCat} disabled={score < 50}>
-              ADOPT CAT (50)
-            </button>
-          ) : (
-            <p className="status-text">CAT ACTIVE (60% Luck)</p>
-          )}
-
-          <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 50 || spawnLevel >= 4}>
-            MORE HEARTS ({(spawnLevel + 1) * 50})
-          </button>
-
-          <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 75 || speedLevel >= 4}>
-            FASTER! ({(speedLevel + 1) * 75})
-          </button>
-
-          <div className="gallery-shop">
-            <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ:</p>
-            <div className="gallery-grid">
-              {GALLERY.map(photo => (
-                <div
-                  key={photo.id}
-                  className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
-                  onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
-                >
-                  {unlockedPhotos.includes(photo.id) ? (
-                    <div className="thumbnail-container">
-                      <img src={photo.src} alt={photo.name} />
-                    </div>
-                  ) : (
-                    <div className="lock-overlay">🔒 {photo.cost}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
+        <div className="panel-header" onClick={() => setIsMenuVisible(!isMenuVisible)}>
+          <h1 style={{ fontSize: '12px', margin: 0 }}>HEART DROP</h1>
+          <button className="toggle-btn">{isMenuVisible ? '▲' : '▼'}</button>
         </div>
 
-        <button
-          className="admin-btn"
-          onClick={() => setScore(s => s + 100)}
-        >
-          DEBUG: +100
-        </button>
+        {isMenuVisible && (
+          <>
+            <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
+
+            <div className="shop-list">
+              {!hasCat ? (
+                <button className="shop-btn" onClick={buyCat} disabled={score < 50}>
+                  ADOPT CAT (50)
+                </button>
+              ) : (
+                <p className="status-text">CAT ACTIVE (60% Luck)</p>
+              )}
+
+              <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 50 || spawnLevel >= 4}>
+                MORE HEARTS ({(spawnLevel + 1) * 50})
+              </button>
+
+              <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 75 || speedLevel >= 4}>
+                FASTER! ({(speedLevel + 1) * 75})
+              </button>
+
+              <div className="gallery-shop">
+                <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
+                <div className="gallery-scroll">
+                  <div className="gallery-grid">
+                    {GALLERY.map(photo => (
+                      <div
+                        key={photo.id}
+                        className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                        onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
+                      >
+                        {unlockedPhotos.includes(photo.id) ? (
+                          <div className="thumbnail-container">
+                            <img src={photo.src} alt={photo.name} />
+                          </div>
+                        ) : (
+                          <div className="lock-overlay">🔒 {photo.cost}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="admin-btn"
+              onClick={() => setScore(s => s + 100)}
+            >
+              DEBUG: +100
+            </button>
+          </>
+        )}
       </div>
 
       {selectedPhoto && (

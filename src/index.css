@@ -449,3 +449,46 @@ body {
   max-height: 70dvh;
   object-fit: contain;
 }
+
+/* Hidable Panel Styles */
+.ui-panel.collapsed {
+  padding: 10px;
+  width: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #ff1493;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.gallery-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 5px;
+  padding-right: 5px;
+}
+
+/* Custom Scrollbar for Pixel Look */
+.gallery-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.gallery-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.gallery-scroll::-webkit-scrollbar-thumb {
+  background: #ff1493;
+  border: 1px solid #fff;
+}
