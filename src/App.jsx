@@ -115,6 +115,8 @@ function App() {
   // Upgrades state
   const [spawnLevel, setSpawnLevel] = useState(0);
   const [speedLevel, setSpeedLevel] = useState(0);
+  const [clickLevel, setClickLevel] = useState(0);
+  const [catEarnLevel, setCatEarnLevel] = useState(0);
 
   // Gallery state
   const [unlockedPhotos, setUnlockedPhotos] = useState([]);
@@ -146,7 +148,7 @@ function App() {
   }, []);
 
   const handleHeartClick = (id, x, y) => {
-    setScore((prev) => prev + 1);
+    setScore((prev) => prev + (1 + clickLevel));
     setHearts((prev) => prev.filter((h) => h.id !== id));
     const text = PHRASES[Math.floor(Math.random() * PHRASES.length)];
     addPhrase(text, x, y);
@@ -191,7 +193,7 @@ function App() {
         // Catch logic - adjusted to catch higher (0.80)
         if (elapsed > target.speed * 0.80) {
           if (Math.random() > 0.4) {
-            setScore(s => s + 1);
+            setScore(s => s + (1 + catEarnLevel));
             // addPhrase("CAT CATCH!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 100);
             playSound('catch');
             triggerHaptic();
@@ -247,6 +249,26 @@ function App() {
     }
   };
 
+  const buyClickBonus = () => {
+    const cost = (clickLevel + 1) * 100;
+    if (score >= cost && clickLevel < 5) {
+      setScore(score - cost);
+      setClickLevel(clickLevel + 1);
+      playSound('buy');
+      triggerHaptic();
+    }
+  };
+
+  const buyCatBonus = () => {
+    const cost = (catEarnLevel + 1) * 150;
+    if (score >= cost && catEarnLevel < 5) {
+      setScore(score - cost);
+      setCatEarnLevel(catEarnLevel + 1);
+      playSound('buy');
+      triggerHaptic();
+    }
+  };
+
   const buyPhoto = (photo) => {
     if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
       setScore(score - photo.cost);
@@ -284,6 +306,14 @@ function App() {
 
               <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 75 || speedLevel >= 4}>
                 FASTER! ({(speedLevel + 1) * 75})
+              </button>
+
+              <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 100 || clickLevel >= 5}>
+                CLICK POWER ({(clickLevel + 1) * 100})
+              </button>
+
+              <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 150 || catEarnLevel >= 5}>
+                CAT REWARD ({(catEarnLevel + 1) * 150})
               </button>
 
               <div className="gallery-shop">
