@@ -180,8 +180,8 @@ function App() {
           }
         });
 
-        // Catch logic - adjusted to catch in front of the cat (0.88)
-        if (elapsed > target.speed * 0.88) {
+        // Catch logic - adjusted to catch higher (0.80)
+        if (elapsed > target.speed * 0.80) {
           if (Math.random() > 0.4) {
             setScore(s => s + 1);
             // addPhrase("CAT CATCH!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 100);
