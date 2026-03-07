@@ -15,6 +15,10 @@ const PHRASES = [
   "ты самая лучшая!"
 ];
 
+const GALLERY = [
+  { id: 'cat_garden', name: 'Сад котиков', cost: 100, src: '/gallery/cat_garden.png' },
+];
+
 // Retro sound generator
 const playSound = (type) => {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -101,6 +105,10 @@ function App() {
   // Upgrades state
   const [spawnLevel, setSpawnLevel] = useState(0);
   const [speedLevel, setSpeedLevel] = useState(0);
+
+  // Gallery state
+  const [unlockedPhotos, setUnlockedPhotos] = useState([]);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
 
   const spawnInterval = Math.max(200, 1000 - spawnLevel * 200);
@@ -229,6 +237,15 @@ function App() {
     }
   };
 
+  const buyPhoto = (photo) => {
+    if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
+      setScore(score - photo.cost);
+      setUnlockedPhotos([...unlockedPhotos, photo.id]);
+      playSound('buy');
+      triggerHaptic();
+    }
+  };
+
 
   return (
     <div className="game-container">
@@ -253,6 +270,26 @@ function App() {
             FASTER! ({(speedLevel + 1) * 75})
           </button>
 
+          <div className="gallery-shop">
+            <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ:</p>
+            <div className="gallery-grid">
+              {GALLERY.map(photo => (
+                <div
+                  key={photo.id}
+                  className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                  onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
+                >
+                  {unlockedPhotos.includes(photo.id) ? (
+                    <div className="thumbnail-container">
+                      <img src={photo.src} alt={photo.name} />
+                    </div>
+                  ) : (
+                    <div className="lock-overlay">🔒 {photo.cost}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <button
@@ -262,6 +299,17 @@ function App() {
           DEBUG: +100
         </button>
       </div>
+
+      {selectedPhoto && (
+        <div className="modal-overlay" onClick={() => setSelectedPhoto(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <img src={selectedPhoto.src} alt={selectedPhoto.name} />
+            <button className="shop-btn" style={{ marginTop: '15px' }} onClick={() => setSelectedPhoto(null)}>
+              ЗАКРЫТЬ
+            </button>
+          </div>
+        </div>
+      )}
 
       {hearts.map((heart) => (
         <Heart
