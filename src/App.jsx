@@ -16,16 +16,16 @@ const PHRASES = [
 ];
 
 const GALLERY = [
-  { id: 'cat_garden', name: 'Сад котиков', cost: 100, src: '/gallery/cat_garden.png' },
-  { id: 'photo_1', name: 'Фото 1', cost: 150, src: '/gallery/photo_1_2026-03-08_00-28-38.jpg' },
-  { id: 'photo_2', name: 'Фото 2', cost: 200, src: '/gallery/photo_2_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_3', name: 'Фото 3', cost: 250, src: '/gallery/photo_3_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_4', name: 'Фото 4', cost: 300, src: '/gallery/photo_4_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_5', name: 'Фото 5', cost: 350, src: '/gallery/photo_5_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_6', name: 'Фото 6', cost: 400, src: '/gallery/photo_6_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_7', name: 'Фото 7', cost: 450, src: '/gallery/photo_7_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_8', name: 'Фото 8', cost: 500, src: '/gallery/photo_8_2026-03-08_00-29-27.jpg' },
-  { id: 'photo_9', name: 'Фото 9', cost: 550, src: '/gallery/photo_9_2026-03-08_00-29-27.jpg' },
+  { id: 'cat_garden', name: 'Сад котиков', cost: 75, src: '/gallery/cat_garden.png' },
+  { id: 'photo_1', name: 'Фото 1', cost: 120, src: '/gallery/photo_1_2026-03-08_00-28-38.jpg' },
+  { id: 'photo_2', name: 'Фото 2', cost: 160, src: '/gallery/photo_2_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_3', name: 'Фото 3', cost: 200, src: '/gallery/photo_3_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_4', name: 'Фото 4', cost: 240, src: '/gallery/photo_4_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_5', name: 'Фото 5', cost: 280, src: '/gallery/photo_5_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_6', name: 'Фото 6', cost: 320, src: '/gallery/photo_6_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_7', name: 'Фото 7', cost: 360, src: '/gallery/photo_7_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_8', name: 'Фото 8', cost: 400, src: '/gallery/photo_8_2026-03-08_00-29-27.jpg' },
+  { id: 'photo_9', name: 'Фото 9', cost: 440, src: '/gallery/photo_9_2026-03-08_00-29-27.jpg' },
 ];
 
 // Retro sound generator
@@ -221,8 +221,8 @@ function App() {
   }, []);
 
   const buyCat = () => {
-    if (score >= 50 && !hasCat) {
-      setScore(score - 50);
+    if (score >= 30 && !hasCat) {
+      setScore(score - 30);
       setHasCat(true);
       playSound('buy');
       triggerHaptic();
@@ -230,7 +230,7 @@ function App() {
   };
 
   const buySpawn = () => {
-    const cost = (spawnLevel + 1) * 50;
+    const cost = (spawnLevel + 1) * 35;
     if (score >= cost && spawnLevel < 4) {
       setScore(score - cost);
       setSpawnLevel(spawnLevel + 1);
@@ -240,7 +240,7 @@ function App() {
   };
 
   const buySpeed = () => {
-    const cost = (speedLevel + 1) * 75;
+    const cost = (speedLevel + 1) * 50;
     if (score >= cost && speedLevel < 4) {
       setScore(score - cost);
       setSpeedLevel(speedLevel + 1);
@@ -250,7 +250,7 @@ function App() {
   };
 
   const buyClickBonus = () => {
-    const cost = (clickLevel + 1) * 100;
+    const cost = (clickLevel + 1) * 70;
     if (score >= cost && clickLevel < 5) {
       setScore(score - cost);
       setClickLevel(clickLevel + 1);
@@ -260,7 +260,7 @@ function App() {
   };
 
   const buyCatBonus = () => {
-    const cost = (catEarnLevel + 1) * 150;
+    const cost = (catEarnLevel + 1) * 100;
     if (score >= cost && catEarnLevel < 5) {
       setScore(score - cost);
       setCatEarnLevel(catEarnLevel + 1);
@@ -293,27 +293,27 @@ function App() {
 
             <div className="shop-list">
               {!hasCat ? (
-                <button className="shop-btn" onClick={buyCat} disabled={score < 50}>
-                  ADOPT CAT (50)
+                <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
+                  ADOPT CAT (30)
                 </button>
               ) : (
                 <p className="status-text">CAT ACTIVE (60% Luck)</p>
               )}
 
-              <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 50 || spawnLevel >= 4}>
-                MORE HEARTS ({(spawnLevel + 1) * 50})
+              <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
+                MORE HEARTS ({(spawnLevel + 1) * 35})
               </button>
 
-              <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 75 || speedLevel >= 4}>
-                FASTER! ({(speedLevel + 1) * 75})
+              <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
+                FASTER! ({(speedLevel + 1) * 50})
               </button>
 
-              <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 100 || clickLevel >= 5}>
-                CLICK POWER ({(clickLevel + 1) * 100})
+              <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
+                CLICK POWER ({(clickLevel + 1) * 70})
               </button>
 
-              <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 150 || catEarnLevel >= 5}>
-                CAT REWARD ({(catEarnLevel + 1) * 150})
+              <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
+                CAT REWARD ({(catEarnLevel + 1) * 100})
               </button>
 
               <div className="gallery-shop">
@@ -339,13 +339,6 @@ function App() {
                 </div>
               </div>
             </div>
-
-            <button
-              className="admin-btn"
-              onClick={() => setScore(s => s + 100)}
-            >
-              DEBUG: +100
-            </button>
           </>
         )}
       </div>
