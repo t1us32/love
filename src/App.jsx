@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 const PHRASES = [
-  "YOU ARE CUTE!",
-  "LOVE YOU!",
-  "STAY SWEET!",
-  "MY HEART!",
-  "KISS!",
-  "SO ADORABLE!",
-  "BE MINE!",
-  "SWEETY!",
-  "XOXO",
-  "HUGS!",
-  "PIXEL LOVE!",
-  "YOU ROCK!"
+  "Люблю тебя!",
+  "Ты мое солнышко!",
+  "Ты самая лучшая!",
+  "самая красивая!",
+  "милашка!",
+  "красивые глазки!",
+  "лучик света!",
+  "сладкая!",
+  "обнимашки!",
+  "целовашки!",
+  "люблю тебя!",
+  "ты самая лучшая!"
 ];
 
 // Retro sound generator
@@ -102,19 +102,9 @@ function App() {
   const [spawnLevel, setSpawnLevel] = useState(0);
   const [speedLevel, setSpeedLevel] = useState(0);
 
-  // Cat skin state
-  const [ownedSkins, setOwnedSkins] = useState(['ginger']);
-  const [currentSkin, setCurrentSkin] = useState('ginger');
-
-  const SKINS = [
-    { id: 'ginger', name: 'GINGER', cost: 0, class: '' },
-    { id: 'black', name: 'BLACK', cost: 100, class: 'cat-black' },
-    { id: 'white', name: 'WHITE', cost: 150, class: 'cat-white' },
-    { id: 'gray', name: 'GRAY', cost: 200, class: 'cat-gray' }
-  ];
 
   const spawnInterval = Math.max(200, 1000 - spawnLevel * 200);
-  const baseSpeed = 4 - speedLevel * 0.5;
+  const baseSpeed = 6 - speedLevel * 0.5;
 
   const spawnHeart = useCallback(() => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -239,19 +229,6 @@ function App() {
     }
   };
 
-  const buySkin = (skin) => {
-    if (ownedSkins.includes(skin.id)) {
-      setCurrentSkin(skin.id);
-      return;
-    }
-    if (score >= skin.cost) {
-      setScore(score - skin.cost);
-      setOwnedSkins([...ownedSkins, skin.id]);
-      setCurrentSkin(skin.id);
-      playSound('buy');
-      triggerHaptic();
-    }
-  };
 
   return (
     <div className="game-container">
@@ -276,22 +253,6 @@ function App() {
             FASTER! ({(speedLevel + 1) * 75})
           </button>
 
-          <div className="skin-shop">
-            <p style={{ fontSize: '8px', margin: '5px 0' }}>CAT SKINS:</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
-              {SKINS.map(skin => (
-                <button
-                  key={skin.id}
-                  className={`shop-btn ${currentSkin === skin.id ? 'active' : ''}`}
-                  onClick={() => buySkin(skin)}
-                  disabled={!ownedSkins.includes(skin.id) && score < skin.cost}
-                  style={{ fontSize: '7px' }}
-                >
-                  {skin.name} {ownedSkins.includes(skin.id) ? '' : `(${skin.cost})`}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <button
@@ -316,7 +277,7 @@ function App() {
 
       {hasCat && (
         <div
-          className={`cat-container ${isCatCatching ? 'cat-running' : ''} ${SKINS.find(s => s.id === currentSkin)?.class || ''}`}
+          className={`cat-container ${isCatCatching ? 'cat-running' : ''}`}
           style={{
             left: `${catX}%`,
             transform: `scaleX(${catFlip})`
