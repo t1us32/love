@@ -383,169 +383,171 @@ function App() {
       </div>
     );
   };
-  if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
-    setScore(score - photo.cost);
-    setUnlockedPhotos([...unlockedPhotos, photo.id]);
-    playSound('buy');
-    triggerHapticFeedback();
-  }
-};
+
+  const buyPhoto = (photo) => {
+    if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
+      setScore(score - photo.cost);
+      setUnlockedPhotos([...unlockedPhotos, photo.id]);
+      playSound('buy');
+      triggerHapticFeedback();
+    }
+  };
 
 
-return (
-  <div className="game-container">
-    <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
-      <div className="panel-header">
-        <div onClick={() => setIsMenuVisible(!isMenuVisible)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-          <h1 style={{ fontSize: '10px', margin: 0 }}>HEART DROP</h1>
-          <button className="toggle-btn" style={{ pointerEvents: 'none' }}>{isMenuVisible ? '▲' : '▼'}</button>
-        </div>
-        {isMenuVisible && (
-          <button
-            className="settings-btn"
-            onClick={() => setShowSettings(!showSettings)}
-            style={{ fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 5px' }}
-          >
-            ⚙️
-          </button>
-        )}
-      </div>
-
-      {isMenuVisible && (
-        <>
-          <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-            <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
-            <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>LEADER</button>
+  return (
+    <div className="game-container">
+      <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
+        <div className="panel-header">
+          <div onClick={() => setIsMenuVisible(!isMenuVisible)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <h1 style={{ fontSize: '10px', margin: 0 }}>HEART DROP</h1>
+            <button className="toggle-btn" style={{ pointerEvents: 'none' }}>{isMenuVisible ? '▲' : '▼'}</button>
           </div>
+          {isMenuVisible && (
+            <button
+              className="settings-btn"
+              onClick={() => setShowSettings(!showSettings)}
+              style={{ fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 5px' }}
+            >
+              ⚙️
+            </button>
+          )}
+        </div>
 
-          {showSettings ? (
-            <div className="settings-panel" style={{ padding: '10px 0' }}>
-              <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАСТРОЙКИ</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
-                  МУЗЫКА: {isMusicEnabled ? 'ВКЛ' : 'ВЫКЛ'}
-                </button>
-                <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
-                  ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВЫКЛ'}
-                </button>
-                <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
-                  <p style={{ fontSize: '8px', color: '#ff1493' }}>моей любимой дашуне ❤️</p>
-                </div>
-                <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
-                  НАЗАД
-                </button>
-              </div>
+        {isMenuVisible && (
+          <>
+            <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+              <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
+              <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>LEADER</button>
             </div>
-          ) : activeTab === 'leaderboard' ? (
-            <Leaderboard />
-          ) : (
-            <>
-              <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
 
-              <div className="shop-list">
-                {!hasCat ? (
-                  <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
-                    ADOPT CAT (30)
+            {showSettings ? (
+              <div className="settings-panel" style={{ padding: '10px 0' }}>
+                <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАСТРОЙКИ</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
+                    МУЗЫКА: {isMusicEnabled ? 'ВКЛ' : 'ВЫКЛ'}
                   </button>
-                ) : (
-                  <p className="status-text">CAT ACTIVE (60% Luck)</p>
-                )}
+                  <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
+                    ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+                  </button>
+                  <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
+                    <p style={{ fontSize: '8px', color: '#ff1493' }}>моей любимой дашуне ❤️</p>
+                  </div>
+                  <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
+                    НАЗАД
+                  </button>
+                </div>
+              </div>
+            ) : activeTab === 'leaderboard' ? (
+              <Leaderboard />
+            ) : (
+              <>
+                <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
 
-                <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
-                  MORE HEARTS ({(spawnLevel + 1) * 35})
-                </button>
+                <div className="shop-list">
+                  {!hasCat ? (
+                    <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
+                      ADOPT CAT (30)
+                    </button>
+                  ) : (
+                    <p className="status-text">CAT ACTIVE (60% Luck)</p>
+                  )}
 
-                <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
-                  FASTER! ({(speedLevel + 1) * 50})
-                </button>
+                  <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
+                    MORE HEARTS ({(spawnLevel + 1) * 35})
+                  </button>
 
-                <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
-                  CLICK POWER ({(clickLevel + 1) * 70})
-                </button>
+                  <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
+                    FASTER! ({(speedLevel + 1) * 50})
+                  </button>
 
-                <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
-                  CAT REWARD ({(catEarnLevel + 1) * 100})
-                </button>
+                  <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
+                    CLICK POWER ({(clickLevel + 1) * 70})
+                  </button>
 
-                <div className="gallery-shop">
-                  <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
-                  <div className="gallery-scroll">
-                    <div className="gallery-grid">
-                      {GALLERY.map(photo => (
-                        <div
-                          key={photo.id}
-                          className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
-                          onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
-                        >
-                          {unlockedPhotos.includes(photo.id) ? (
-                            <div className="thumbnail-container">
-                              <img src={photo.src} alt={photo.name} />
-                            </div>
-                          ) : (
-                            <div className="lock-overlay">🔒 {photo.cost}</div>
-                          )}
-                        </div>
-                      ))}
+                  <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
+                    CAT REWARD ({(catEarnLevel + 1) * 100})
+                  </button>
+
+                  <div className="gallery-shop">
+                    <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
+                    <div className="gallery-scroll">
+                      <div className="gallery-grid">
+                        {GALLERY.map(photo => (
+                          <div
+                            key={photo.id}
+                            className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                            onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
+                          >
+                            {unlockedPhotos.includes(photo.id) ? (
+                              <div className="thumbnail-container">
+                                <img src={photo.src} alt={photo.name} />
+                              </div>
+                            ) : (
+                              <div className="lock-overlay">🔒 {photo.cost}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
 
-    {selectedPhoto && (
-      <div className="modal-overlay" onClick={() => setSelectedPhoto(null)}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <img src={selectedPhoto.src} alt={selectedPhoto.name} />
-          <button className="shop-btn" style={{ marginTop: '15px' }} onClick={() => setSelectedPhoto(null)}>
-            ЗАКРЫТЬ
-          </button>
+      {selectedPhoto && (
+        <div className="modal-overlay" onClick={() => setSelectedPhoto(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <img src={selectedPhoto.src} alt={selectedPhoto.name} />
+            <button className="shop-btn" style={{ marginTop: '15px' }} onClick={() => setSelectedPhoto(null)}>
+              ЗАКРЫТЬ
+            </button>
+          </div>
         </div>
+      )}
+
+      {hearts.map((heart) => (
+        <Heart
+          key={heart.id}
+          {...heart}
+          onRemove={handleHeartClick}
+        />
+      ))}
+
+      {activePhrases.map((phrase) => (
+        <Phrase key={phrase.id} {...phrase} />
+      ))}
+
+      {hasCat && (
+        <div
+          className={`cat-container ${isCatCatching ? 'cat-running' : ''}`}
+          style={{
+            left: `${catX}%`,
+            transform: `scaleX(${catFlip})`
+          }}
+        >
+          <div className="cat-tail" />
+          <div className="cat-pixel" />
+          <div className="cat-paw left" />
+          <div className="cat-paw right" />
+        </div>
+      )}
+
+      <div style={{
+        position: 'absolute',
+        bottom: '10px',
+        right: '10px',
+        fontSize: '8px',
+        color: 'rgba(255,255,255,0.5)',
+        zIndex: 10
+      }}>
+        TAP HEARTS!
       </div>
-    )}
-
-    {hearts.map((heart) => (
-      <Heart
-        key={heart.id}
-        {...heart}
-        onRemove={handleHeartClick}
-      />
-    ))}
-
-    {activePhrases.map((phrase) => (
-      <Phrase key={phrase.id} {...phrase} />
-    ))}
-
-    {hasCat && (
-      <div
-        className={`cat-container ${isCatCatching ? 'cat-running' : ''}`}
-        style={{
-          left: `${catX}%`,
-          transform: `scaleX(${catFlip})`
-        }}
-      >
-        <div className="cat-tail" />
-        <div className="cat-pixel" />
-        <div className="cat-paw left" />
-        <div className="cat-paw right" />
-      </div>
-    )}
-
-    <div style={{
-      position: 'absolute',
-      bottom: '10px',
-      right: '10px',
-      fontSize: '8px',
-      color: 'rgba(255,255,255,0.5)',
-      zIndex: 10
-    }}>
-      TAP HEARTS!
     </div>
-  </div>
-);
+  );
 }
 
 export default App;
