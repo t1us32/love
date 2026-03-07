@@ -29,46 +29,8 @@ const GALLERY = [
 ];
 
 // Retro sound generator
-const playSound = (type) => {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-
-  const ctx = new AudioContext();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  if (type === 'catch') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.1);
-  } else if (type === 'miss') {
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(150, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.05, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.2);
-  } else if (type === 'buy') {
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(200, ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
-  }
-};
-
-const triggerHaptic = () => {
-  if (navigator.vibrate) {
+const triggerHaptic = (enabled) => {
+  if (enabled && navigator.vibrate) {
     navigator.vibrate(50);
   }
 };
@@ -102,6 +64,33 @@ const Phrase = ({ text, x, y }) => {
   );
 };
 
+// Music Engine (Arpeggio loop)
+let bgmInterval = null;
+const playBGM = (ctx, enabled) => {
+  if (!enabled) {
+    if (bgmInterval) clearInterval(bgmInterval);
+    return;
+  }
+  if (bgmInterval) return;
+
+  const notes = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4 D4 E4 G4 A4
+  let step = 0;
+
+  bgmInterval = setInterval(() => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(notes[step % notes.length], ctx.currentTime);
+    gain.gain.setValueAtTime(0.02, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+    step++;
+  }, 250);
+};
+
 function App() {
   const [hearts, setHearts] = useState([]);
   const [activePhrases, setActivePhrases] = useState([]);
@@ -111,6 +100,9 @@ function App() {
   const [catFlip, setCatFlip] = useState(1); // 1 = right, -1 = left
   const [isCatCatching, setIsCatCatching] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(true);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Upgrades state
   const [spawnLevel, setSpawnLevel] = useState(0);
@@ -122,8 +114,24 @@ function App() {
   const [unlockedPhotos, setUnlockedPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+  // Audio Context Ref
+  const audioCtxRef = React.useRef(null);
 
-  const spawnInterval = Math.max(200, 1000 - spawnLevel * 200);
+  const getAudioCtx = () => {
+    if (!audioCtxRef.current) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) audioCtxRef.current = new AudioContext();
+    }
+    return audioCtxRef.current;
+  };
+
+  useEffect(() => {
+    const ctx = getAudioCtx();
+    if (ctx) playBGM(ctx, isMusicEnabled);
+    return () => { if (bgmInterval) clearInterval(bgmInterval); bgmInterval = null; };
+  }, [isMusicEnabled]);
+
+  const spawnInterval = Math.max(100, 1000 - spawnLevel * 220);
   const baseSpeed = 6 - speedLevel * 0.5;
 
   const spawnHeart = useCallback(() => {
@@ -147,14 +155,56 @@ function App() {
     }, 1500);
   }, []);
 
-  const handleHeartClick = (id, x, y) => {
+  // Audio Logic
+  const playSound = useCallback((type) => {
+    if (!isSoundEnabled) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'catch') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } else if (type === 'miss') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    } else if (type === 'buy') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    }
+  }, [isSoundEnabled]);
+
+  const triggerHapticFeedback = useCallback(() => {
+    if (isSoundEnabled && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  }, [isSoundEnabled]);
+  const handleHeartClick = useCallback((id, x, y) => {
     setScore((prev) => prev + (1 + clickLevel));
     setHearts((prev) => prev.filter((h) => h.id !== id));
     const text = PHRASES[Math.floor(Math.random() * PHRASES.length)];
     addPhrase(text, x, y);
     playSound('catch');
-    triggerHaptic();
-  };
+    triggerHapticFeedback();
+  }, [clickLevel, addPhrase, playSound, triggerHapticFeedback]);
 
   // Constant tracking for the cat
   useEffect(() => {
@@ -196,7 +246,7 @@ function App() {
             setScore(s => s + (1 + catEarnLevel));
             // addPhrase("CAT CATCH!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 100);
             playSound('catch');
-            triggerHaptic();
+            triggerHapticFeedback();
             return prev.filter(h => h.id !== target.id);
           } else {
             // addPhrase("OOF!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 80);
@@ -225,7 +275,7 @@ function App() {
       setScore(score - 30);
       setHasCat(true);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -235,7 +285,7 @@ function App() {
       setScore(score - cost);
       setSpawnLevel(spawnLevel + 1);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -245,7 +295,7 @@ function App() {
       setScore(score - cost);
       setSpeedLevel(speedLevel + 1);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -255,7 +305,7 @@ function App() {
       setScore(score - cost);
       setClickLevel(clickLevel + 1);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -265,7 +315,7 @@ function App() {
       setScore(score - cost);
       setCatEarnLevel(catEarnLevel + 1);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -274,7 +324,7 @@ function App() {
       setScore(score - photo.cost);
       setUnlockedPhotos([...unlockedPhotos, photo.id]);
       playSound('buy');
-      triggerHaptic();
+      triggerHapticFeedback();
     }
   };
 
@@ -282,63 +332,96 @@ function App() {
   return (
     <div className="game-container">
       <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
-        <div className="panel-header" onClick={() => setIsMenuVisible(!isMenuVisible)}>
-          <h1 style={{ fontSize: '12px', margin: 0 }}>HEART DROP</h1>
-          <button className="toggle-btn">{isMenuVisible ? '▲' : '▼'}</button>
+        <div className="panel-header">
+          <div onClick={() => setIsMenuVisible(!isMenuVisible)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <h1 style={{ fontSize: '10px', margin: 0 }}>HEART DROP</h1>
+            <button className="toggle-btn" style={{ pointerEvents: 'none' }}>{isMenuVisible ? '▲' : '▼'}</button>
+          </div>
+          {isMenuVisible && (
+            <button
+              className="settings-btn"
+              onClick={() => setShowSettings(!showSettings)}
+              style={{ fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 5px' }}
+            >
+              ⚙️
+            </button>
+          )}
         </div>
 
         {isMenuVisible && (
           <>
-            <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
-
-            <div className="shop-list">
-              {!hasCat ? (
-                <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
-                  ADOPT CAT (30)
-                </button>
-              ) : (
-                <p className="status-text">CAT ACTIVE (60% Luck)</p>
-              )}
-
-              <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
-                MORE HEARTS ({(spawnLevel + 1) * 35})
-              </button>
-
-              <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
-                FASTER! ({(speedLevel + 1) * 50})
-              </button>
-
-              <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
-                CLICK POWER ({(clickLevel + 1) * 70})
-              </button>
-
-              <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
-                CAT REWARD ({(catEarnLevel + 1) * 100})
-              </button>
-
-              <div className="gallery-shop">
-                <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
-                <div className="gallery-scroll">
-                  <div className="gallery-grid">
-                    {GALLERY.map(photo => (
-                      <div
-                        key={photo.id}
-                        className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
-                        onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
-                      >
-                        {unlockedPhotos.includes(photo.id) ? (
-                          <div className="thumbnail-container">
-                            <img src={photo.src} alt={photo.name} />
-                          </div>
-                        ) : (
-                          <div className="lock-overlay">🔒 {photo.cost}</div>
-                        )}
-                      </div>
-                    ))}
+            {showSettings ? (
+              <div className="settings-panel" style={{ padding: '10px 0' }}>
+                <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАСТРОЙКИ</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
+                    МУЗЫКА: {isMusicEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+                  </button>
+                  <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
+                    ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+                  </button>
+                  <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
+                    <p style={{ fontSize: '8px', color: '#ff1493' }}>моей любимой дашуне ❤️</p>
                   </div>
+                  <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
+                    НАЗАД
+                  </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
+
+                <div className="shop-list">
+                  {!hasCat ? (
+                    <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
+                      ADOPT CAT (30)
+                    </button>
+                  ) : (
+                    <p className="status-text">CAT ACTIVE (60% Luck)</p>
+                  )}
+
+                  <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
+                    MORE HEARTS ({(spawnLevel + 1) * 35})
+                  </button>
+
+                  <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
+                    FASTER! ({(speedLevel + 1) * 50})
+                  </button>
+
+                  <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
+                    CLICK POWER ({(clickLevel + 1) * 70})
+                  </button>
+
+                  <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
+                    CAT REWARD ({(catEarnLevel + 1) * 100})
+                  </button>
+
+                  <div className="gallery-shop">
+                    <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
+                    <div className="gallery-scroll">
+                      <div className="gallery-grid">
+                        {GALLERY.map(photo => (
+                          <div
+                            key={photo.id}
+                            className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                            onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
+                          >
+                            {unlockedPhotos.includes(photo.id) ? (
+                              <div className="thumbnail-container">
+                                <img src={photo.src} alt={photo.name} />
+                              </div>
+                            ) : (
+                              <div className="lock-overlay">🔒 {photo.cost}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
