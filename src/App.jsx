@@ -15,6 +15,20 @@ const PHRASES = [
   "ты самая лучшая!"
 ];
 
+const HEART_TYPES = {
+  NORMAL: { id: 'normal', color: '#ff1493', xp: 10, bonus: 0, weight: 80, class: 'heart-normal' },
+  GOLD: { id: 'gold', color: '#ffd700', xp: 50, bonus: 10, weight: 10, class: 'heart-gold' },
+  BLACK: { id: 'black', color: '#333', xp: 5, bonus: -5, weight: 7, class: 'heart-black' },
+  STAR: { id: 'star', color: '#00ffff', xp: 100, bonus: 5, weight: 3, class: 'heart-star' }
+};
+
+const THEMES = [
+  { id: 'default', name: 'РОЗОВЫЙ', cost: 0, gradient: 'linear-gradient(135deg, #ffc1e3 0%, #ff85a2 100%)' },
+  { id: 'night', name: 'НОЧЬ', cost: 200, gradient: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)' },
+  { id: 'forest', name: 'ЛЕС', cost: 300, gradient: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' },
+  { id: 'cosmos', name: 'КОСМОС', cost: 500, gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)' }
+];
+
 const GALLERY = [
   { id: 'cat_garden', name: 'Сад котиков', cost: 75, src: '/gallery/cat_garden.png' },
   { id: 'photo_1', name: 'Фото 1', cost: 120, src: '/gallery/photo_1_2026-03-08_00-28-38.jpg' },
@@ -35,17 +49,17 @@ const triggerHaptic = (enabled) => {
   }
 };
 
-const Heart = ({ id, x, speed, onRemove }) => {
+const Heart = ({ id, x, type, speed, onRemove }) => {
   return (
     <div
-      className="heart-container falling"
+      className={`heart-container falling ${type.class}`}
       style={{
         left: `${x}%`,
         animationDuration: `${speed}s`,
       }}
-      onClick={(e) => onRemove(id, e.clientX, e.clientY)}
+      onClick={(e) => onRemove(id, e.clientX, e.clientY, type)}
     >
-      <div className="heart" />
+      <div className="heart" style={{ filter: type.id === 'black' ? 'grayscale(1) brightness(0.5)' : (type.id === 'gold' ? 'hue-rotate(45deg) brightness(1.5)' : (type.id === 'star' ? 'hue-rotate(180deg) brightness(1.2)' : 'none')) }} />
     </div>
   );
 };
@@ -95,6 +109,8 @@ function App() {
   const [hearts, setHearts] = useState([]);
   const [activePhrases, setActivePhrases] = useState([]);
   const [score, setScore] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
   const [hasCat, setHasCat] = useState(false);
   const [catX, setCatX] = useState(50);
   const [catFlip, setCatFlip] = useState(1); // 1 = right, -1 = left
@@ -103,7 +119,10 @@ function App() {
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeTab, setActiveTab] = useState('shop'); // 'shop', 'gallery', 'leaderboard'
+  const [activeTab, setActiveTab] = useState('shop'); // 'shop', 'gallery', 'leaderboard', 'achievements'
+  const [currentTheme, setCurrentTheme] = useState('default');
+  const [unlockedThemes, setUnlockedThemes] = useState(['default']);
+  const [frenzyTimer, setFrenzyTimer] = useState(0);
 
   // Telegram User
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -128,12 +147,16 @@ function App() {
     if (saved) {
       const data = JSON.parse(saved);
       setScore(data.score || 0);
+      setXp(data.xp || 0);
+      setLevel(data.level || 1);
       setHasCat(data.hasCat || false);
       setSpawnLevel(data.spawnLevel || 0);
       setSpeedLevel(data.speedLevel || 0);
       setClickLevel(data.clickLevel || 0);
       setCatEarnLevel(data.catEarnLevel || 0);
       setUnlockedPhotos(data.unlockedPhotos || []);
+      setUnlockedThemes(data.unlockedThemes || ['default']);
+      setCurrentTheme(data.currentTheme || 'default');
     }
   }, []);
 
@@ -141,15 +164,19 @@ function App() {
   useEffect(() => {
     const data = {
       score,
+      xp,
+      level,
       hasCat,
       spawnLevel,
       speedLevel,
       clickLevel,
       catEarnLevel,
-      unlockedPhotos
+      unlockedPhotos,
+      unlockedThemes,
+      currentTheme
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-  }, [score, hasCat, spawnLevel, speedLevel, clickLevel, catEarnLevel, unlockedPhotos]);
+  }, [score, xp, level, hasCat, spawnLevel, speedLevel, clickLevel, catEarnLevel, unlockedPhotos, unlockedThemes, currentTheme]);
 
   // Audio Context Ref
   const audioCtxRef = React.useRef(null);
@@ -163,21 +190,37 @@ function App() {
   };
 
   useEffect(() => {
-    const ctx = getAudioCtx();
-    if (ctx) playBGM(ctx, isMusicEnabled);
-    return () => { if (bgmInterval) clearInterval(bgmInterval); bgmInterval = null; };
-  }, [isMusicEnabled]);
+    if (frenzyTimer > 0) {
+      const timer = setInterval(() => setFrenzyTimer(t => t - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [frenzyTimer]);
 
   const spawnInterval = Math.max(100, 1000 - spawnLevel * 220);
   const baseSpeed = 6 - speedLevel * 0.5;
 
   const spawnHeart = useCallback(() => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const x = 5 + Math.random() * 85; // Fixed range to avoid edge clipping
-    const speed = baseSpeed + Math.random() * 3;
+    // Determine type
+    const roll = Math.random() * 100;
+    let accumulated = 0;
+    let type = HEART_TYPES.NORMAL;
 
-    setHearts((prev) => [...prev, { id, x, speed, startTime: Date.now() }]);
-  }, [baseSpeed]);
+    for (const key in HEART_TYPES) {
+      accumulated += HEART_TYPES[key].weight;
+      if (roll <= accumulated) {
+        type = HEART_TYPES[key];
+        break;
+      }
+    }
+
+    const id = Math.random().toString(36).substr(2, 9);
+    const x = 5 + Math.random() * 85;
+    let speed = baseSpeed + Math.random() * 3;
+
+    if (frenzyTimer > 0) speed *= 0.5;
+
+    setHearts((prev) => [...prev, { id, x, type, speed, startTime: Date.now() }]);
+  }, [baseSpeed, frenzyTimer]);
 
   useEffect(() => {
     const interval = setInterval(spawnHeart, spawnInterval);
@@ -234,14 +277,35 @@ function App() {
       navigator.vibrate(50);
     }
   }, [isSoundEnabled]);
-  const handleHeartClick = useCallback((id, x, y) => {
-    setScore((prev) => prev + (1 + clickLevel));
+  const handleHeartClick = useCallback((id, x, y, type) => {
+    const bonus = frenzyTimer > 0 ? 2 : 1;
+    const scoreGain = (type.bonus + (type.id === 'normal' ? clickLevel : 0)) * bonus;
+    setScore((prev) => Math.max(0, prev + scoreGain + (type.id === 'normal' ? 1 : 0)));
+
+    // XP Logic
+    setXp((prev) => {
+      const nextXp = prev + type.xp;
+      const xpToLevel = level * 100;
+      if (nextXp >= xpToLevel) {
+        setLevel(l => l + 1);
+        addPhrase("LEVEL UP!", x, y);
+        playSound('buy');
+        return nextXp - xpToLevel;
+      }
+      return nextXp;
+    });
+
+    if (type.id === 'star') {
+      setFrenzyTimer(10);
+      addPhrase("FRENZY!", x, y);
+    }
+
     setHearts((prev) => prev.filter((h) => h.id !== id));
-    const text = PHRASES[Math.floor(Math.random() * PHRASES.length)];
+    const text = type.id === 'black' ? "OOPS!" : PHRASES[Math.floor(Math.random() * PHRASES.length)];
     addPhrase(text, x, y);
-    playSound('catch');
+    playSound(type.id === 'black' ? 'miss' : 'catch');
     triggerHapticFeedback();
-  }, [clickLevel, addPhrase, playSound, triggerHapticFeedback]);
+  }, [clickLevel, addPhrase, playSound, triggerHapticFeedback, level, frenzyTimer]);
 
   // Constant tracking for the cat
   useEffect(() => {
@@ -384,18 +448,21 @@ function App() {
     );
   };
 
-  const buyPhoto = (photo) => {
-    if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
-      setScore(score - photo.cost);
-      setUnlockedPhotos([...unlockedPhotos, photo.id]);
+  const buyTheme = (theme) => {
+    if (score >= theme.cost && !unlockedThemes.includes(theme.id)) {
+      setScore(score - theme.cost);
+      setUnlockedThemes([...unlockedThemes, theme.id]);
       playSound('buy');
       triggerHapticFeedback();
     }
   };
 
+  const currentThemeData = THEMES.find(t => t.id === currentTheme) || THEMES[0];
+
 
   return (
-    <div className="game-container">
+    <div className={`game-container theme-${currentTheme}`} style={{ background: currentThemeData.gradient }}>
+      {frenzyTimer > 0 && <div className="frenzy-overlay" />}
       <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
         <div className="panel-header">
           <div onClick={() => setIsMenuVisible(!isMenuVisible)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -418,6 +485,17 @@ function App() {
             <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
               <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
               <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>LEADER</button>
+              <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>ACHIEV</button>
+            </div>
+
+            <div className="level-box" style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', marginBottom: '4px' }}>
+                <span>LVL {level}</span>
+                <span>{xp}/{level * 100} XP</span>
+              </div>
+              <div className="progress-bg">
+                <div className="progress-fill" style={{ width: `${(xp / (level * 100)) * 100}%` }} />
+              </div>
             </div>
 
             {showSettings ? (
@@ -440,6 +518,19 @@ function App() {
               </div>
             ) : activeTab === 'leaderboard' ? (
               <Leaderboard />
+            ) : activeTab === 'achievements' ? (
+              <div className="achievements-list" style={{ marginTop: '10px' }}>
+                <p style={{ fontSize: '10px', marginBottom: '15px' }}>ДОСТИЖЕНИЯ</p>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left' }}>
+                  НОВИЧОК: Достигните 5 уровня {level >= 5 ? '✅' : '❌'}
+                </div>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                  КОЛЛЕКЦИОНЕР: Соберите 3 фото {unlockedPhotos.length >= 3 ? '✅' : '❌'}
+                </div>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                  БОГАТЕЙ: 1000 очков {score >= 1000 ? '✅' : '❌'}
+                </div>
+              </div>
             ) : (
               <>
                 <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
@@ -468,6 +559,23 @@ function App() {
                   <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
                     CAT REWARD ({(catEarnLevel + 1) * 100})
                   </button>
+
+                  <div className="themes-shop">
+                    <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ТЕМЫ:</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                      {THEMES.map(theme => (
+                        <button
+                          key={theme.id}
+                          className={`shop-btn ${currentTheme === theme.id ? 'active' : ''}`}
+                          onClick={() => unlockedThemes.includes(theme.id) ? setCurrentTheme(theme.id) : buyTheme(theme)}
+                          disabled={!unlockedThemes.includes(theme.id) && score < theme.cost}
+                          style={{ fontSize: '6px', padding: '5px', margin: 0 }}
+                        >
+                          {theme.name} {unlockedThemes.includes(theme.id) ? '' : `(${theme.cost})`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="gallery-shop">
                     <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>

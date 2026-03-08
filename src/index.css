@@ -138,6 +138,60 @@ body {
   animation: float linear;
 }
 
+.heart-gold {
+  animation: pulse-gold 1s infinite alternate;
+}
+
+.heart-star {
+  animation: star-glow 1s infinite alternate;
+}
+
+@keyframes pulse-gold {
+  from {
+    transform: scale(1);
+    filter: drop-shadow(0 0 5px gold);
+  }
+
+  to {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px gold);
+  }
+}
+
+@keyframes star-glow {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: hue-rotate(0deg) drop-shadow(0 0 5px cyan);
+  }
+
+  100% {
+    transform: scale(1.2) rotate(10deg);
+    filter: hue-rotate(360deg) drop-shadow(0 0 20px cyan);
+  }
+}
+
+.frenzy-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0) 0%, rgba(0, 255, 255, 0.1) 100%);
+  pointer-events: none;
+  z-index: 1;
+  animation: frenzy-pulse 0.5s infinite alternate;
+}
+
+@keyframes frenzy-pulse {
+  from {
+    opacity: 0.3;
+  }
+
+  to {
+    opacity: 0.7;
+  }
+}
+
 .shop-list {
   display: flex;
   flex-direction: column;
@@ -376,6 +430,7 @@ body {
 .cat-gray .cat-tail {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 5' shape-rendering='crispEdges'><path d='M1 1h3v1h1v2H4V3H1V1z' fill='%23444'/><path d='M1 2h3v1H1z' fill='%23888'/></svg>");
 }
+
 /* Gallery Styles */
 .gallery-grid {
   display: grid;
@@ -441,7 +496,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
 }
 
 .modal-content img {
@@ -485,9 +540,11 @@ body {
 .gallery-scroll::-webkit-scrollbar {
   width: 6px;
 }
+
 .gallery-scroll::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
 }
+
 .gallery-scroll::-webkit-scrollbar-thumb {
   background: #ff1493;
   border: 1px solid #fff;
@@ -511,11 +568,44 @@ body {
 }
 
 .leader-row.special {
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
   font-weight: bold;
 }
 
 .shop-list {
   max-height: 40dvh;
+  overflow-y: auto;
+}
+
+.progress-bg {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid #fff;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ff1493;
+  transition: width 0.3s ease;
+}
+
+.level-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.themes-shop {
+  margin-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  padding-top: 10px;
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 30dvh;
   overflow-y: auto;
 }
