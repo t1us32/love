@@ -16,8 +16,8 @@ const PHRASES = [
 ];
 
 const HEART_TYPES = {
-  NORMAL: { id: 'normal', color: '#ff1493', xp: 10, bonus: 0, weight: 80, class: 'heart-normal' },
-  GOLD: { id: 'gold', color: '#ffd700', xp: 50, bonus: 10, weight: 10, class: 'heart-gold' },
+  NORMAL: { id: 'normal', color: '#ff1493', xp: 10, bonus: 0, weight: 70, class: 'heart-normal' },
+  GOLD: { id: 'gold', color: '#ffd700', xp: 50, bonus: 10, weight: 20, class: 'heart-gold' },
   BLACK: { id: 'black', color: '#333', xp: 5, bonus: -5, weight: 7, class: 'heart-black' },
   STAR: { id: 'star', color: '#00ffff', xp: 100, bonus: 5, weight: 3, class: 'heart-star' }
 };
@@ -49,15 +49,15 @@ const triggerHaptic = (enabled) => {
   }
 };
 
-const Heart = ({ id, x, type, speed, onRemove }) => {
+const Heart = ({ id, x, type, speed, onRemove, isPaused }) => {
   return (
     <div
-      className={`heart-container falling ${type.class}`}
+      className={`heart-container falling ${type.class} ${isPaused ? 'paused' : ''}`}
       style={{
         left: `${x}%`,
         animationDuration: `${speed}s`,
       }}
-      onClick={(e) => onRemove(id, e.clientX, e.clientY, type)}
+      onClick={(e) => !isPaused && onRemove(id, e.clientX, e.clientY, type)}
     >
       <div className="heart" style={{ filter: type.id === 'black' ? 'grayscale(1) brightness(0.5)' : (type.id === 'gold' ? 'hue-rotate(45deg) brightness(1.5)' : (type.id === 'star' ? 'hue-rotate(180deg) brightness(1.2)' : 'none')) }} />
     </div>
@@ -115,7 +115,7 @@ function App() {
   const [catX, setCatX] = useState(50);
   const [catFlip, setCatFlip] = useState(1); // 1 = right, -1 = left
   const [isCatCatching, setIsCatCatching] = useState(false);
-  const [isMenuVisible, setIsMenuVisible] = useState(true);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -223,9 +223,10 @@ function App() {
   }, [baseSpeed, frenzyTimer]);
 
   useEffect(() => {
+    if (isMenuVisible) return;
     const interval = setInterval(spawnHeart, spawnInterval);
     return () => clearInterval(interval);
-  }, [spawnHeart, spawnInterval]);
+  }, [spawnHeart, spawnInterval, isMenuVisible]);
 
   const addPhrase = useCallback((text, x, y) => {
     const phraseId = Math.random().toString(36).substr(2, 9);
@@ -309,7 +310,7 @@ function App() {
 
   // Constant tracking for the cat
   useEffect(() => {
-    if (!hasCat) return;
+    if (!hasCat || isMenuVisible) return;
 
     const interval = setInterval(() => {
       setHearts((prev) => {
@@ -364,12 +365,13 @@ function App() {
 
   // Clean up hearts that fall completely (safety net)
   useEffect(() => {
+    if (isMenuVisible) return;
     const cleanup = setInterval(() => {
       const now = Date.now();
       setHearts((prev) => prev.filter(h => (now - h.startTime) / 1000 < h.speed + 0.2));
     }, 200);
     return () => clearInterval(cleanup);
-  }, []);
+  }, [isMenuVisible]);
 
   const buyCat = () => {
     if (score >= 30 && !hasCat) {
@@ -461,149 +463,146 @@ function App() {
 
 
   return (
-    <div className={`game-container theme-${currentTheme}`} style={{ background: currentThemeData.gradient }}>
+    <div className={`game-container theme-${currentTheme} ${isMenuVisible ? 'game-paused' : ''}`} style={{ background: currentThemeData.gradient }}>
       {frenzyTimer > 0 && <div className="frenzy-overlay" />}
-      <div className={`ui-panel ${!isMenuVisible ? 'collapsed' : ''}`}>
-        <div className="panel-header">
-          <div onClick={() => setIsMenuVisible(!isMenuVisible)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <h1 style={{ fontSize: '10px', margin: 0 }}>HEART DROP</h1>
-            <button className="toggle-btn" style={{ pointerEvents: 'none' }}>{isMenuVisible ? '▲' : '▼'}</button>
+
+      {/* HUD Bar - Always Visible */}
+      <div className="hud-bar">
+        <div className="hud-stat">❤️ {score}</div>
+        <div className="hud-stat">⭐ {level}</div>
+        <button className="menu-open-btn" onClick={() => setIsMenuVisible(true)}>MENU</button>
+      </div>
+
+      <div className={`ui-panel-overlay ${isMenuVisible ? 'visible' : ''}`}>
+        <div className="ui-panel">
+          <div className="panel-header">
+            <h1 style={{ fontSize: '14px', margin: 0 }}>PAUSED</h1>
+            <button className="close-panel-btn" onClick={() => setIsMenuVisible(false)}>RESUME</button>
           </div>
-          {isMenuVisible && (
-            <button
-              className="settings-btn"
-              onClick={() => setShowSettings(!showSettings)}
-              style={{ fontSize: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: '0 5px' }}
-            >
-              ⚙️
-            </button>
-          )}
-        </div>
+          <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+            <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
+            <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>LEADER</button>
+            <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>ACHIEV</button>
+          </div>
 
-        {isMenuVisible && (
-          <>
-            <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-              <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
-              <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>LEADER</button>
-              <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>ACHIEV</button>
+          <div className="level-box" style={{ marginBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', marginBottom: '4px' }}>
+              <span>LVL {level}</span>
+              <span>{xp}/{level * 100} XP</span>
             </div>
+            <div className="progress-bg">
+              <div className="progress-fill" style={{ width: `${(xp / (level * 100)) * 100}%` }} />
+            </div>
+          </div>
 
-            <div className="level-box" style={{ marginBottom: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', marginBottom: '4px' }}>
-                <span>LVL {level}</span>
-                <span>{xp}/{level * 100} XP</span>
-              </div>
-              <div className="progress-bg">
-                <div className="progress-fill" style={{ width: `${(xp / (level * 100)) * 100}%` }} />
+          {showSettings ? (
+            <div className="settings-panel" style={{ padding: '10px 0' }}>
+              <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАСТРОЙКИ</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
+                  МУЗЫКА: {isMusicEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+                </button>
+                <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
+                  ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+                </button>
+                <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
+                  <p style={{ fontSize: '8px', color: '#ff1493' }}>моей любимой дашуне ❤️</p>
+                </div>
+                <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
+                  НАЗАД
+                </button>
               </div>
             </div>
+          ) : activeTab === 'leaderboard' ? (
+            <Leaderboard />
+          ) : activeTab === 'achievements' ? (
+            <div className="achievements-list" style={{ marginTop: '10px' }}>
+              <p style={{ fontSize: '10px', marginBottom: '15px' }}>ДОСТИЖЕНИЯ</p>
+              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left' }}>
+                НОВИЧОК: Достигните 5 уровня {level >= 5 ? '✅' : '❌'}
+              </div>
+              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                КОЛЛЕКЦИОНЕР: Соберите 3 фото {unlockedPhotos.length >= 3 ? '✅' : '❌'}
+              </div>
+              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                БОГАТЕЙ: 1000 очков {score >= 1000 ? '✅' : '❌'}
+              </div>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
 
-            {showSettings ? (
-              <div className="settings-panel" style={{ padding: '10px 0' }}>
-                <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАСТРОЙКИ</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
-                    МУЗЫКА: {isMusicEnabled ? 'ВКЛ' : 'ВЫКЛ'}
+              <div className="shop-list">
+                {!hasCat ? (
+                  <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
+                    ADOPT CAT (30)
                   </button>
-                  <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
-                    ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВЫКЛ'}
-                  </button>
-                  <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
-                    <p style={{ fontSize: '8px', color: '#ff1493' }}>моей любимой дашуне ❤️</p>
+                ) : (
+                  <p className="status-text">CAT ACTIVE (60% Luck)</p>
+                )}
+
+                <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
+                  MORE HEARTS ({(spawnLevel + 1) * 35})
+                </button>
+
+                <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
+                  FASTER! ({(speedLevel + 1) * 50})
+                </button>
+
+                <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
+                  CLICK POWER ({(clickLevel + 1) * 70})
+                </button>
+
+                <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
+                  CAT REWARD ({(catEarnLevel + 1) * 100})
+                </button>
+
+                <div className="themes-shop">
+                  <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ТЕМЫ:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                    {THEMES.map(theme => (
+                      <button
+                        key={theme.id}
+                        className={`shop-btn ${currentTheme === theme.id ? 'active' : ''}`}
+                        onClick={() => unlockedThemes.includes(theme.id) ? setCurrentTheme(theme.id) : buyTheme(theme)}
+                        disabled={!unlockedThemes.includes(theme.id) && score < theme.cost}
+                        style={{ fontSize: '6px', padding: '5px', margin: 0 }}
+                      >
+                        {theme.name} {unlockedThemes.includes(theme.id) ? '' : `(${theme.cost})`}
+                      </button>
+                    ))}
                   </div>
-                  <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
-                    НАЗАД
-                  </button>
                 </div>
-              </div>
-            ) : activeTab === 'leaderboard' ? (
-              <Leaderboard />
-            ) : activeTab === 'achievements' ? (
-              <div className="achievements-list" style={{ marginTop: '10px' }}>
-                <p style={{ fontSize: '10px', marginBottom: '15px' }}>ДОСТИЖЕНИЯ</p>
-                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left' }}>
-                  НОВИЧОК: Достигните 5 уровня {level >= 5 ? '✅' : '❌'}
-                </div>
-                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
-                  КОЛЛЕКЦИОНЕР: Соберите 3 фото {unlockedPhotos.length >= 3 ? '✅' : '❌'}
-                </div>
-                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
-                  БОГАТЕЙ: 1000 очков {score >= 1000 ? '✅' : '❌'}
-                </div>
-              </div>
-            ) : (
-              <>
-                <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
 
-                <div className="shop-list">
-                  {!hasCat ? (
-                    <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
-                      ADOPT CAT (30)
-                    </button>
-                  ) : (
-                    <p className="status-text">CAT ACTIVE (60% Luck)</p>
-                  )}
-
-                  <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
-                    MORE HEARTS ({(spawnLevel + 1) * 35})
-                  </button>
-
-                  <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
-                    FASTER! ({(speedLevel + 1) * 50})
-                  </button>
-
-                  <button className="shop-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
-                    CLICK POWER ({(clickLevel + 1) * 70})
-                  </button>
-
-                  <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
-                    CAT REWARD ({(catEarnLevel + 1) * 100})
-                  </button>
-
-                  <div className="themes-shop">
-                    <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ТЕМЫ:</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
-                      {THEMES.map(theme => (
-                        <button
-                          key={theme.id}
-                          className={`shop-btn ${currentTheme === theme.id ? 'active' : ''}`}
-                          onClick={() => unlockedThemes.includes(theme.id) ? setCurrentTheme(theme.id) : buyTheme(theme)}
-                          disabled={!unlockedThemes.includes(theme.id) && score < theme.cost}
-                          style={{ fontSize: '6px', padding: '5px', margin: 0 }}
+                <div className="gallery-shop">
+                  <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
+                  <div className="gallery-scroll">
+                    <div className="gallery-grid">
+                      {GALLERY.map(photo => (
+                        <div
+                          key={photo.id}
+                          className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                          onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
                         >
-                          {theme.name} {unlockedThemes.includes(theme.id) ? '' : `(${theme.cost})`}
-                        </button>
+                          {unlockedPhotos.includes(photo.id) ? (
+                            <div className="thumbnail-container">
+                              <img src={photo.src} alt={photo.name} />
+                            </div>
+                          ) : (
+                            <div className="lock-overlay">🔒 {photo.cost}</div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
-
-                  <div className="gallery-shop">
-                    <p style={{ fontSize: '8px', margin: '15px 0 5px' }}>ГАЛЕРЕЯ (Скролл ↓):</p>
-                    <div className="gallery-scroll">
-                      <div className="gallery-grid">
-                        {GALLERY.map(photo => (
-                          <div
-                            key={photo.id}
-                            className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
-                            onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
-                          >
-                            {unlockedPhotos.includes(photo.id) ? (
-                              <div className="thumbnail-container">
-                                <img src={photo.src} alt={photo.name} />
-                              </div>
-                            ) : (
-                              <div className="lock-overlay">🔒 {photo.cost}</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </>
-            )}
-          </>
-        )}
+              </div>
+            </>
+          )}
+          <button className="settings-btn-alt" onClick={() => setShowSettings(!showSettings)}>
+            {showSettings ? 'BACK' : 'SETTINGS ⚙️'}
+          </button>
+        </div>
       </div>
 
       {selectedPhoto && (
@@ -621,6 +620,7 @@ function App() {
         <Heart
           key={heart.id}
           {...heart}
+          isPaused={isMenuVisible}
           onRemove={handleHeartClick}
         />
       ))}

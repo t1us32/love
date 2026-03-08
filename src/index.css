@@ -73,6 +73,11 @@ body {
   z-index: 5;
 }
 
+.heart-container.paused {
+  animation-play-state: paused !important;
+  pointer-events: none;
+}
+
 .heart {
   width: 44px;
   height: 40px;
@@ -505,28 +510,103 @@ body {
   object-fit: contain;
 }
 
-/* Hidable Panel Styles */
-.ui-panel.collapsed {
-  padding: 10px;
-  width: auto;
+/* Modal Panel Styles */
+.ui-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(5px);
+}
+
+.ui-panel-overlay.visible {
+  display: flex;
+}
+
+.ui-panel {
+  background: #fff;
+  padding: 20px;
+  border: 4px solid #ff1493;
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+  color: #ff1493;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 4px solid #ff1493;
 }
 
-.toggle-btn {
-  background: none;
-  border: none;
-  color: #ff1493;
+.close-panel-btn {
+  background: #ff1493;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 5px 10px;
   font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
+  font-size: 8px;
   cursor: pointer;
-  padding: 0;
+}
+
+.settings-btn-alt {
+  margin-top: 15px;
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* HUD Bar Styles */
+.hud-bar {
+  position: absolute;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border-bottom: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+}
+
+.hud-stat {
+  font-size: 8px;
+  color: #ff1493;
+  background: #fff;
+  padding: 10px;
+  border: 2px solid #ff1493;
+}
+
+.menu-open-btn {
+  background: #ff1493;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 8px 15px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  cursor: pointer;
 }
 
 .gallery-scroll {
