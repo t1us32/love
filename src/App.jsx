@@ -457,9 +457,12 @@ function App() {
 
         // Catch logic
         const currentCat = CAT_TIERS[catTier];
-        if (elapsed > target.speed * 0.80) {
+        // 0.72 ensures it's caught slightly above the head
+        if (elapsed > target.speed * 0.72) {
           if (Math.random() <= currentCat.luck) {
             setScore(s => s + (1 + catEarnLevel));
+            // Bonus XP for cat catch
+            setXp(x => x + 2);
             playSound('catch');
             triggerHapticFeedback();
             return prev.filter(h => h.id !== target.id);
@@ -470,7 +473,7 @@ function App() {
         }
         return prev;
       });
-    }, 100);
+    }, 80);
 
     return () => clearInterval(interval);
   }, [hasCat, addPhrase]);
@@ -600,6 +603,15 @@ function App() {
     if (score >= theme.cost && !unlockedThemes.includes(theme.id)) {
       setScore(score - theme.cost);
       setUnlockedThemes([...unlockedThemes, theme.id]);
+      playSound('buy');
+      triggerHapticFeedback();
+    }
+  };
+
+  const buyPhoto = (photo) => {
+    if (score >= photo.cost && !unlockedPhotos.includes(photo.id)) {
+      setScore(score - photo.cost);
+      setUnlockedPhotos([...unlockedPhotos, photo.id]);
       playSound('buy');
       triggerHapticFeedback();
     }
