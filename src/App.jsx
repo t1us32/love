@@ -58,14 +58,14 @@ const HEART_TYPES = {
 };
 
 const CAT_TIERS = [
-  { id: 'standard', name: 'ЗВИЧАЙНИЙ КІТ', luck: 0.6, cost: 30, color: '#fbc02d', class: 'cat-yellow', idleRate: 1 },
-  { id: 'ginger', name: 'РУДИЙ КІТ', luck: 0.8, cost: 150, color: '#e67e22', class: 'cat-ginger', idleRate: 5 },
-  { id: 'void', name: 'ЧОРНИЙ КІТ', luck: 0.95, cost: 500, color: '#2c3e50', class: 'cat-void', idleRate: 15 },
-  { id: 'cosmic', name: 'КОСМІЧНИЙ КІТ', luck: 1.1, cost: 1500, color: '#9b59b6', class: 'cat-cosmic', idleRate: 50 },
-  { id: 'angel', name: 'АНГЕЛЬСЬКИЙ КІТ', luck: 1.3, cost: 5000, color: '#fff', class: 'cat-angel', idleRate: 150 },
-  { id: 'devil', name: 'ДЕМОНІЧНИЙ КІТ', luck: 1.6, cost: 15000, color: '#ff0000', class: 'cat-devil', idleRate: 500 },
-  { id: 'hacker', name: 'ХАКЕРСЬКИЙ КІТ', luck: 2.0, cost: 50000, color: '#00ff00', class: 'cat-hacker', idleRate: 2000 },
-  { id: 'god', name: 'БОЖЕСТВЕННИЙ КІТ', luck: 5.0, cost: 200000, color: '#ffd700', class: 'cat-god', idleRate: 10000 }
+  { id: 'standard', name: 'ЗВИЧАЙНИЙ КІТ', luck: 0.6, cost: 30, color: '#fbc02d', class: 'cat-yellow', idleRate: 1, icon: '🐈' },
+  { id: 'ginger', name: 'РУДИЙ КІТ', luck: 0.8, cost: 150, color: '#e67e22', class: 'cat-ginger', idleRate: 5, icon: '🍊' },
+  { id: 'void', name: 'ЧОРНИЙ КІТ', luck: 0.95, cost: 500, color: '#2c3e50', class: 'cat-void', idleRate: 15, icon: '🐈‍⬛' },
+  { id: 'cosmic', name: 'КОСМІЧНИЙ КІТ', luck: 1.1, cost: 1500, color: '#9b59b6', class: 'cat-cosmic', idleRate: 50, icon: '🌌' },
+  { id: 'angel', name: 'АНГЕЛЬСЬКИЙ КІТ', luck: 1.3, cost: 5000, color: '#fff', class: 'cat-angel', idleRate: 150, icon: '👼' },
+  { id: 'devil', name: 'ДЕМОНІЧНИЙ КІТ', luck: 1.6, cost: 15000, color: '#ff0000', class: 'cat-devil', idleRate: 500, icon: '😈' },
+  { id: 'hacker', name: 'ХАКЕРСЬКИЙ КІТ', luck: 2.0, cost: 50000, color: '#00ff00', class: 'cat-hacker', idleRate: 2000, icon: '💻' },
+  { id: 'god', name: 'БОЖЕСТВЕННИЙ КІТ', luck: 5.0, cost: 200000, color: '#ffd700', class: 'cat-god', idleRate: 10000, icon: '👑' }
 ];
 
 const THEMES = [
@@ -656,210 +656,222 @@ function App() {
             <button className="close-panel-btn" onClick={() => setIsMenuVisible(false)}>ГРАТИ</button>
           </div>
           <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-            <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>КРАМНИЦЯ</button>
-            <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>ЛІДЕРИ</button>
-            <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>ДОСЯГН.</button>
+            <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>🛒 КРАМНИЦЯ</button>
+            <button className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>🏆 ЛІДЕРИ</button>
+            <button className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>✨ ДОСЯГН.</button>
           </div>
 
-          <div className="level-box" style={{ marginBottom: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', marginBottom: '4px' }}>
-              <span>РІВЕНЬ {level}</span>
-              <span>{xp}/{level * 100} ДОСВІД</span>
+          <div className="menu-content">
+            <div className="level-box" style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', marginBottom: '4px' }}>
+                <span>РІВЕНЬ {level}</span>
+                <span>{xp}/{level * 100} ДОСВІД</span>
+              </div>
+              <div className="progress-bg">
+                <div className="progress-fill" style={{ width: `${(xp / (level * 100)) * 100}%` }} />
+              </div>
             </div>
-            <div className="progress-bg">
-              <div className="progress-fill" style={{ width: `${(xp / (level * 100)) * 100}%` }} />
-            </div>
-          </div>
 
-          {showSettings ? (
-            <div className="settings-panel" style={{ padding: '10px 0' }}>
-              <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАЛАШТУВАННЯ</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
-                  МУЗИКА: {isMusicEnabled ? 'ВКЛ' : 'ВИКЛ'}
-                </button>
-                <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
-                  ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВИКЛ'}
-                </button>
-                <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
-                  <p style={{ fontSize: '8px', color: '#ff1493' }}>моїй коханій дашуні ❤️</p>
-                </div>
-                <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
-                  НАЗАД
-                </button>
-              </div>
-            </div>
-          ) : activeTab === 'leaderboard' ? (
-            <Leaderboard />
-          ) : activeTab === 'achievements' ? (
-            <div className="achievements-list" style={{ marginTop: '10px' }}>
-              <p style={{ fontSize: '10px', marginBottom: '15px' }}>ДОСТИЖЕНИЯ</p>
-              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left' }}>
-                НОВИЧОК: Достигните 5 уровня {level >= 5 ? '✅' : '❌'}
-              </div>
-              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
-                МАЙСТЕР КОМБО: 20 поспіль {combo >= 20 ? '✅' : '❌'}
-              </div>
-              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
-                КОЛЕКЦІОНЕР: Зберіть 3 фото {unlockedPhotos.length >= 3 ? '✅' : '❌'}
-              </div>
-              <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
-                БАГАТІЙ: 1000 очок {score >= 1000 ? '✅' : '❌'}
-              </div>
-            </div>
-          ) : (
-            <div className="shop-container">
-              <div className="shop-tabs">
-                <button className={`shop-tab-btn ${shopCategory === 'boosts' ? 'active' : ''}`} onClick={() => setShopCategory('boosts')}>БУСТИ</button>
-                <button className={`shop-tab-btn ${shopCategory === 'cats' ? 'active' : ''}`} onClick={() => setShopCategory('cats')}>КОТИ</button>
-                <button className={`shop-tab-btn ${shopCategory === 'locales' ? 'active' : ''}`} onClick={() => setShopCategory('locales')}>ФОНИ</button>
-                <button className={`shop-tab-btn ${shopCategory === 'gallery' ? 'active' : ''}`} onClick={() => setShopCategory('gallery')}>ГАЛЕРЕЯ</button>
-              </div>
-
-              <div className="shop-content">
-                {shopCategory === 'boosts' && (
-                  <div className="shop-grid">
-                    <button className="square-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 10}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M4 2h8v1h1v1h1v1h1v4h-1v1h-1v1h-1v1h-2v1h-1v-2h2v-1h1v-1h1V5h-1V4h-1V3H5v1H4v1H3v4h1v1h1v1h2v1H5v1H3v-1H2v-1H1V5h1V4h1V3h1V2zm7 7h2v2h-2V9zm-5 0h2v2H6V9z" />
-                          <path d="M11 12h2v2h-2v-2zm-2 2h2v2H9v-2zm-2-2h2v2H7v-2z" fill="#ff1493" opacity="0.3" />
-                          <path d="M12 4h1v1h-1V4zm-8 0h1v1H4V4z" fill="white" />
-                          <path d="M7 6h2v5H7V6zm-2 2h6v2H5V8z" fill="#4caf50" /> {/* Plus sign */}
-                        </svg>
-                      </div>
-                      <span className="btn-label">ПОЯВА</span>
-                      <span className="btn-cost">{(spawnLevel + 1) * 35}</span>
-                    </button>
-                    <button className="square-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M2 3h2v10H2V3zm3 0h2v10H5V3zm3 0h2v10H8V3zm3 2h2v6h-2V5zm3 2h1v2h-1V7z" opacity="0.4" />
-                          <path d="M4 4l8 4-8 4V4zm6 0l5 4-5 4V4z" />
-                        </svg>
-                      </div>
-                      <span className="btn-label">ШВИДКІСТЬ</span>
-                      <span className="btn-cost">{(speedLevel + 1) * 50}</span>
-                    </button>
-                    <button className="square-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M7 1h2v2H7V1zm0 13h2v2H7v-2zm-4-7h2v2H3V7zm10 0h2v2h-2V7z" opacity="0.3" />
-                          <path d="M8 2l4 4H9v8H7V6H4l4-4z" />
-                          <path d="M9 7h2v2H9V7zM5 7h2v2H5V7z" fill="white" opacity="0.5" />
-                        </svg>
-                      </div>
-                      <span className="btn-label">КЛІК</span>
-                      <span className="btn-cost">{(clickLevel + 1) * 70}</span>
-                    </button>
-                    <button className="square-btn" onClick={buyLuck} disabled={score < (luckLevel + 1) * 120 || luckLevel >= 10}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M7 2h2v3H7V2zm0 9h2v3H7v-3zm-5-4h3v2H2V7zm9 0h3v2h-3V7z" opacity="0.2" />
-                          <path d="M5 5h2v2H5V5zm4 0h2v2H9V5zm0 4h2v2H9V9zm-4 0h2v2H5V9z" />
-                          <path d="M7 7h2v2H7V7z" fill="white" />
-                        </svg>
-                      </div>
-                      <span className="btn-label">УДАЧА</span>
-                      <span className="btn-cost">{(luckLevel + 1) * 120}</span>
-                    </button>
-                    <button className="square-btn" onClick={buyDouble} disabled={score < (doubleLevel + 1) * 200 || doubleLevel >= 5}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M1 4h4v1h1v1h1v1h1v-1h1v-1h4v1h1v1h1v4h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v1h-1v1h-1v1H3v-1H2v-1H1V5h1V4z" />
-                          <path d="M3 6h2v1h1v2H3V6zm8 0h2v1h1v2h-3V6z" fill="white" opacity="0.4" />
-                        </svg>
-                      </div>
-                      <span className="btn-label">ДУБЛЬ</span>
-                      <span className="btn-cost">{(doubleLevel + 1) * 200}</span>
-                    </button>
-                    <button className="square-btn" onClick={buyCrit} disabled={score < (critLevel + 1) * 150 || critLevel >= 10}>
-                      <div className="btn-icon">
-                        <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
-                          <path d="M7 0h2v16H7V0zm-7 7h16v2H0V7z" opacity="0.2" />
-                          <path d="M4 4h8v1h1v1h1v4h-1v1h-1v1H4v-1H3v-1H2V6h1V5h1V4zm4 2h2v2H8V6z" />
-                          <path d="M6 8h2v2H6V8z" fill="#ff1493" />
-                        </svg>
-                      </div>
-                      <span className="btn-label">КРИТ</span>
-                      <span className="btn-cost">{(critLevel + 1) * 150}</span>
-                    </button>
+            {showSettings ? (
+              <div className="settings-panel" style={{ padding: '10px 0' }}>
+                <p style={{ fontSize: '10px', marginBottom: '10px' }}>НАЛАШТУВАННЯ</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button className="shop-btn" onClick={() => setIsMusicEnabled(!isMusicEnabled)}>
+                    МУЗИКА: {isMusicEnabled ? 'ВКЛ' : 'ВИКЛ'}
+                  </button>
+                  <button className="shop-btn" onClick={() => setIsSoundEnabled(!isSoundEnabled)}>
+                    ЗВУКИ: {isSoundEnabled ? 'ВКЛ' : 'ВИКЛ'}
+                  </button>
+                  <div className="credits-section" style={{ marginTop: '20px', borderTop: '1px dashed #ff1493', paddingTop: '10px' }}>
+                    <p style={{ fontSize: '8px', color: '#ff1493' }}>моїй коханій дашуні ❤️</p>
                   </div>
-                )}
+                  <button className="shop-btn" onClick={() => setShowSettings(false)} style={{ marginTop: '10px' }}>
+                    НАЗАД
+                  </button>
+                </div>
+              </div>
+            ) : activeTab === 'leaderboard' ? (
+              <Leaderboard />
+            ) : activeTab === 'achievements' ? (
+              <div className="achievements-list" style={{ marginTop: '10px' }}>
+                <p style={{ fontSize: '10px', marginBottom: '15px' }}>ДОСТИЖЕНИЯ</p>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left' }}>
+                  НОВИЧОК: Достигните 5 уровня {level >= 5 ? '✅' : '❌'}
+                </div>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                  МАЙСТЕР КОМБО: 20 поспіль {combo >= 20 ? '✅' : '❌'}
+                </div>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                  КОЛЕКЦІОНЕР: Зберіть 3 фото {unlockedPhotos.length >= 3 ? '✅' : '❌'}
+                </div>
+                <div className="shop-btn active" style={{ fontSize: '8px', textAlign: 'left', marginTop: '5px' }}>
+                  БАГАТІЙ: 1000 очок {score >= 1000 ? '✅' : '❌'}
+                </div>
+              </div>
+            ) : (
+              <div className="shop-container">
+                <div className="tab-buttons inner" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+                  <button className={`tab-btn-small ${shopCategory === 'boosts' ? 'active' : ''}`} onClick={() => setShopCategory('boosts')}>🆙</button>
+                  <button className={`tab-btn-small ${shopCategory === 'cats' ? 'active' : ''}`} onClick={() => setShopCategory('cats')}>🐱</button>
+                  <button className={`tab-btn-small ${shopCategory === 'locales' ? 'active' : ''}`} onClick={() => setShopCategory('locales')}>🎨</button>
+                  <button className={`tab-btn-small ${shopCategory === 'gallery' ? 'active' : ''}`} onClick={() => setShopCategory('gallery')}>🖼️</button>
+                </div>
 
-                {shopCategory === 'cats' && (
-                  <div className="shop-list">
-                    <div className="cat-upgrade-section">
+                <div className="shop-content">
+                  {shopCategory === 'boosts' && (
+                    <div className="shop-grid">
+                      <button className="square-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 10}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M4 2h8v1h1v1h1v1h1v4h-1v1h-1v1h-1v1h-2v1h-1v-2h2v-1h1v-1h1V5h-1V4h-1V3H5v1H4v1H3v4h1v1h1v1h2v1H5v1H3v-1H2v-1H1V5h1V4h1V3h1V2zm7 7h2v2h-2V9zm-5 0h2v2H6V9z" />
+                            <path d="M11 12h2v2h-2v-2zm-2 2h2v2H9v-2zm-2-2h2v2H7v-2z" fill="#ff1493" opacity="0.3" />
+                            <path d="M12 4h1v1h-1V4zm-8 0h1v1H4V4z" fill="white" />
+                            <path d="M7 6h2v5H7V6zm-2 2h6v2H5V8z" fill="#4caf50" /> {/* Plus sign */}
+                          </svg>
+                        </div>
+                        <span className="btn-label">ПОЯВА</span>
+                        <span className="btn-cost">{(spawnLevel + 1) * 35}</span>
+                      </button>
+                      <button className="square-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M2 3h2v10H2V3zm3 0h2v10H5V3zm3 0h2v10H8V3zm3 2h2v6h-2V5zm3 2h1v2h-1V7z" opacity="0.4" />
+                            <path d="M4 4l8 4-8 4V4zm6 0l5 4-5 4V4z" />
+                          </svg>
+                        </div>
+                        <span className="btn-label">ШВИДКІСТЬ</span>
+                        <span className="btn-cost">{(speedLevel + 1) * 50}</span>
+                      </button>
+                      <button className="square-btn" onClick={buyClickBonus} disabled={score < (clickLevel + 1) * 70 || clickLevel >= 5}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M7 1h2v2H7V1zm0 13h2v2H7v-2zm-4-7h2v2H3V7zm10 0h2v2h-2V7z" opacity="0.3" />
+                            <path d="M8 2l4 4H9v8H7V6H4l4-4z" />
+                            <path d="M9 7h2v2H9V7zM5 7h2v2H5V7z" fill="white" opacity="0.5" />
+                          </svg>
+                        </div>
+                        <span className="btn-label">КЛІК</span>
+                        <span className="btn-cost">{(clickLevel + 1) * 70}</span>
+                      </button>
+                      <button className="square-btn" onClick={buyLuck} disabled={score < (luckLevel + 1) * 120 || luckLevel >= 10}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M7 2h2v3H7V2zm0 9h2v3H7v-3zm-5-4h3v2H2V7zm9 0h3v2h-3V7z" opacity="0.2" />
+                            <path d="M5 5h2v2H5V5zm4 0h2v2H9V5zm0 4h2v2H9V9zm-4 0h2v2H5V9z" />
+                            <path d="M7 7h2v2H7V7z" fill="white" />
+                          </svg>
+                        </div>
+                        <span className="btn-label">УДАЧА</span>
+                        <span className="btn-cost">{(luckLevel + 1) * 120}</span>
+                      </button>
+                      <button className="square-btn" onClick={buyDouble} disabled={score < (doubleLevel + 1) * 200 || doubleLevel >= 5}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M1 4h4v1h1v1h1v1h1v-1h1v-1h4v1h1v1h1v4h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v1h-1v1h-1v1H3v-1H2v-1H1V5h1V4z" />
+                            <path d="M3 6h2v1h1v2H3V6zm8 0h2v1h1v2h-3V6z" fill="white" opacity="0.4" />
+                          </svg>
+                        </div>
+                        <span className="btn-label">ДУБЛЬ</span>
+                        <span className="btn-cost">{(doubleLevel + 1) * 200}</span>
+                      </button>
+                      <button className="square-btn" onClick={buyCrit} disabled={score < (critLevel + 1) * 150 || critLevel >= 10}>
+                        <div className="btn-icon">
+                          <svg viewBox="0 0 16 16" width="32" height="32" fill="currentColor">
+                            <path d="M7 0h2v16H7V0zm-7 7h16v2H0V7z" opacity="0.2" />
+                            <path d="M4 4h8v1h1v1h1v4h-1v1h-1v1H4v-1H3v-1H2V6h1V5h1V4zm4 2h2v2H8V6z" />
+                            <path d="M6 8h2v2H6V8z" fill="#ff1493" />
+                          </svg>
+                        </div>
+                        <span className="btn-label">КРИТ</span>
+                        <span className="btn-cost">{(critLevel + 1) * 150}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {shopCategory === 'cats' && (
+                    <div className="shop-list">
                       {catTier < CAT_TIERS.length - 1 ? (
-                        <button className="shop-btn" onClick={buyCat} disabled={score < CAT_TIERS[hasCat ? catTier + 1 : 0].cost}>
-                          {CAT_TIERS[hasCat ? catTier + 1 : 0].name} ({CAT_TIERS[hasCat ? catTier + 1 : 0].cost})
-                          <br />
-                          <span style={{ fontSize: '6px' }}>
-                            УДАЧА: {(CAT_TIERS[hasCat ? catTier + 1 : 0].luck * 100).toFixed(0)}% |
-                            ОФЛАЙН: {CAT_TIERS[hasCat ? catTier + 1 : 0].idleRate}❤️/хв
-                          </span>
+                        <button className="shop-btn" onClick={buyCat} disabled={score < CAT_TIERS[hasCat ? catTier + 1 : 0].cost} style={{ padding: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '24px' }}>{CAT_TIERS[hasCat ? catTier + 1 : 0].icon}</span>
+                            <div style={{ textAlign: 'left' }}>
+                              <div style={{ fontSize: '10px' }}>{CAT_TIERS[hasCat ? catTier + 1 : 0].name}</div>
+                              <div style={{ fontSize: '10px', color: '#ff1493' }}>❤️ {CAT_TIERS[hasCat ? catTier + 1 : 0].cost}</div>
+                            </div>
+                          </div>
+                          <div style={{ marginTop: '5px', display: 'flex', gap: '10px', fontSize: '6px', opacity: 0.8 }}>
+                            <span>🍀 +{(CAT_TIERS[hasCat ? catTier + 1 : 0].luck * 100).toFixed(0)}%</span>
+                            <span>💤 {CAT_TIERS[hasCat ? catTier + 1 : 0].idleRate}❤️/хв</span>
+                          </div>
                         </button>
                       ) : (
-                        <p className="status-text">ДОСЯГНУТО МАКС. РІВЕНЬ!</p>
+                        <p className="status-text">🏆 MAX LEVEL!</p>
                       )}
-                      <button className="shop-btn" onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
-                        ВИНАГОРОДА КОТА ({(catEarnLevel + 1) * 100})
-                      </button>
-                      {hasCat && (
-                        <p style={{ fontSize: '6px', textAlign: 'center', marginTop: '10px' }}>
-                          ПОТОЧНИЙ: {CAT_TIERS[catTier].name} <br />
-                          (Дохід: {Math.floor(CAT_TIERS[catTier].idleRate * (1 + catEarnLevel * 0.5))}❤️/хв)
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
 
-                {shopCategory === 'locales' && (
-                  <div className="shop-list">
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
-                      {THEMES.map(theme => (
-                        <button
-                          key={theme.id}
-                          className={`shop-btn ${currentTheme === theme.id ? 'active' : ''}`}
-                          onClick={() => unlockedThemes.includes(theme.id) ? setCurrentTheme(theme.id) : buyTheme(theme)}
-                          disabled={!unlockedThemes.includes(theme.id) && score < theme.cost}
-                          style={{ fontSize: '6px', padding: '5px', margin: 0 }}
-                        >
-                          {theme.name} {unlockedThemes.includes(theme.id) ? '' : `(${theme.cost})`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {shopCategory === 'gallery' && (
-                  <div className="gallery-scroll">
-                    <div className="gallery-grid">
-                      {GALLERY.map(photo => (
-                        <div
-                          key={photo.id}
-                          className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
-                          onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
-                        >
-                          {unlockedPhotos.includes(photo.id) ? (
-                            <div className="thumbnail-container">
-                              <img src={photo.src} alt={photo.name} />
-                            </div>
-                          ) : (
-                            <div className="lock-overlay">🔒 {photo.cost}</div>
-                          )}
+                      <button className="shop-btn" style={{ marginTop: '10px' }} onClick={buyCatBonus} disabled={score < (catEarnLevel + 1) * 100 || catEarnLevel >= 5}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>🥗 КОРМ</span>
+                          <span>❤️ {(catEarnLevel + 1) * 100}</span>
                         </div>
-                      ))}
+                      </button>
+
+                      {hasCat && (
+                        <div style={{ marginTop: '10px', background: '#fff0f5', padding: '10px', borderRadius: '8px', border: '2px solid #ff1493' }}>
+                          <p style={{ fontSize: '7px', textAlign: 'center', margin: 0 }}>
+                            ПОТОЧНИЙ: {CAT_TIERS[catTier].icon} {CAT_TIERS[catTier].name} <br />
+                            💰 ДОХІД: {Math.floor(CAT_TIERS[catTier].idleRate * (1 + catEarnLevel * 0.5))} ❤️/хв
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {shopCategory === 'locales' && (
+                    <div className="shop-list">
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                        {THEMES.map(theme => (
+                          <button
+                            key={theme.id}
+                            className={`shop-btn ${currentTheme === theme.id ? 'active' : ''}`}
+                            onClick={() => unlockedThemes.includes(theme.id) ? setCurrentTheme(theme.id) : buyTheme(theme)}
+                            disabled={!unlockedThemes.includes(theme.id) && score < theme.cost}
+                            style={{ fontSize: '6px', padding: '5px', margin: 0 }}
+                          >
+                            {theme.name} {unlockedThemes.includes(theme.id) ? '' : `(${theme.cost})`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {shopCategory === 'gallery' && (
+                    <div className="gallery-scroll">
+                      <div className="gallery-grid">
+                        {GALLERY.map(photo => (
+                          <div
+                            key={photo.id}
+                            className={`gallery-item ${unlockedPhotos.includes(photo.id) ? 'unlocked' : 'locked'}`}
+                            onClick={() => unlockedPhotos.includes(photo.id) ? setSelectedPhoto(photo) : buyPhoto(photo)}
+                          >
+                            {unlockedPhotos.includes(photo.id) ? (
+                              <div className="thumbnail-container">
+                                <img src={photo.src} alt={photo.name} />
+                              </div>
+                            ) : (
+                              <div className="lock-overlay">🔒 {photo.cost}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          <button className="settings-btn-alt" onClick={() => setShowSettings(!showSettings)}>
-            {showSettings ? 'BACK' : 'SETTINGS ⚙️'}
-          </button>
+            )}
+            <button className="settings-btn-alt" onClick={() => setShowSettings(!showSettings)}>
+              {showSettings ? 'BACK' : 'SETTINGS ⚙️'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -902,15 +914,8 @@ function App() {
         </div>
       )}
 
-      <div style={{
-        position: 'absolute',
-        bottom: '10px',
-        right: '10px',
-        fontSize: '8px',
-        color: 'rgba(255,255,255,0.5)',
-        zIndex: 10
-      }}>
-        TAP HEARTS!
+      <div style={{ position: 'absolute', bottom: '10px', right: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', zIndex: 10 }}>
+        DASHULA ❤️ CATS
       </div>
     </div>
   );

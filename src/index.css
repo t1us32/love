@@ -542,10 +542,12 @@ body {
   background: #fff;
   padding: 15px;
   border: 4px solid #ff1493;
-  width: 100%;
-  max-width: 400px;
-  max-height: 85vh;
-  overflow-y: auto;
+  width: 95%;
+  max-width: 500px;
+  height: 65vh;
+  /* Shorter vertically, wider overall */
+  overflow: hidden;
+  /* Header stays, content scrolls */
   box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
   color: #ff1493;
   display: flex;
@@ -565,9 +567,30 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding-bottom: 10px;
   border-bottom: 4px solid #ff1493;
+  flex-shrink: 0;
+}
+
+.menu-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Custom scrollbar for pixel look */
+.menu-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menu-content::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.menu-content::-webkit-scrollbar-thumb {
+  background: #ff1493;
+  border: 2px solid #f0f0f0;
 }
 
 .close-panel-btn {
@@ -691,6 +714,30 @@ body {
   border-color: #fff;
   color: #fff;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+
+.tab-btn-small {
+  background: #fff;
+  border: 4px solid #ff1493;
+  color: #ff1493;
+  font-size: 18px;
+  /* Big enough for emojis */
+  padding: 5px;
+  cursor: pointer;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0px rgba(255, 20, 147, 0.2);
+}
+
+.tab-btn-small.active {
+  background: #ff1493;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.1);
 }
 
 .leader-row.special {
