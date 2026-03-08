@@ -22,6 +22,13 @@ const HEART_TYPES = {
   STAR: { id: 'star', color: '#00ffff', xp: 100, bonus: 5, weight: 3, class: 'heart-star' }
 };
 
+const CAT_TIERS = [
+  { id: 'standard', name: 'ОБЫЧНЫЙ КОТ', luck: 0.6, cost: 30, color: '#fbc02d', class: 'cat-yellow' },
+  { id: 'ginger', name: 'ИМБИРНЫЙ КОТ', luck: 0.8, cost: 150, color: '#e67e22', class: 'cat-ginger' },
+  { id: 'void', name: 'ЧЕРНЫЙ КОТ', luck: 0.95, cost: 500, color: '#2c3e50', class: 'cat-void' },
+  { id: 'cosmic', name: 'КОСМИЧЕСКИЙ КОТ', luck: 1.0, cost: 1500, color: '#9b59b6', class: 'cat-cosmic' }
+];
+
 const THEMES = [
   { id: 'default', name: 'РОЗОВЫЙ', cost: 0, gradient: 'linear-gradient(135deg, #ffc1e3 0%, #ff85a2 100%)' },
   { id: 'night', name: 'НОЧЬ', cost: 200, gradient: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)' },
@@ -112,6 +119,7 @@ function App() {
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [hasCat, setHasCat] = useState(false);
+  const [catTier, setCatTier] = useState(0);
   const [catX, setCatX] = useState(50);
   const [catFlip, setCatFlip] = useState(1); // 1 = right, -1 = left
   const [isCatCatching, setIsCatCatching] = useState(false);
@@ -150,6 +158,7 @@ function App() {
       setXp(data.xp || 0);
       setLevel(data.level || 1);
       setHasCat(data.hasCat || false);
+      setCatTier(data.catTier || 0);
       setSpawnLevel(data.spawnLevel || 0);
       setSpeedLevel(data.speedLevel || 0);
       setClickLevel(data.clickLevel || 0);
@@ -167,6 +176,7 @@ function App() {
       xp,
       level,
       hasCat,
+      catTier,
       spawnLevel,
       speedLevel,
       clickLevel,
@@ -196,8 +206,8 @@ function App() {
     }
   }, [frenzyTimer]);
 
-  const spawnInterval = Math.max(100, 1000 - spawnLevel * 220);
-  const baseSpeed = 6 - speedLevel * 0.5;
+  const spawnInterval = Math.max(40, 1000 - spawnLevel * 100);
+  const baseSpeed = 6 - speedLevel * 0.7;
 
   const spawnHeart = useCallback(() => {
     // Determine type
@@ -342,16 +352,15 @@ function App() {
           }
         });
 
-        // Catch logic - adjusted to catch higher (0.80)
+        // Catch logic
+        const currentCat = CAT_TIERS[catTier];
         if (elapsed > target.speed * 0.80) {
-          if (Math.random() > 0.4) {
+          if (Math.random() <= currentCat.luck) {
             setScore(s => s + (1 + catEarnLevel));
-            // addPhrase("CAT CATCH!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 100);
             playSound('catch');
             triggerHapticFeedback();
             return prev.filter(h => h.id !== target.id);
           } else {
-            // addPhrase("OOF!", (target.x / 100) * (window.innerWidth - 60), window.innerHeight - 80);
             playSound('miss');
             return prev.filter(h => h.id !== target.id);
           }
@@ -374,9 +383,14 @@ function App() {
   }, [isMenuVisible]);
 
   const buyCat = () => {
-    if (score >= 30 && !hasCat) {
-      setScore(score - 30);
-      setHasCat(true);
+    const nextTier = hasCat ? catTier + 1 : 0;
+    if (nextTier >= CAT_TIERS.length) return;
+
+    const tierData = CAT_TIERS[nextTier];
+    if (score >= tierData.cost) {
+      setScore(score - tierData.cost);
+      if (!hasCat) setHasCat(true);
+      else setCatTier(nextTier);
       playSound('buy');
       triggerHapticFeedback();
     }
@@ -384,7 +398,7 @@ function App() {
 
   const buySpawn = () => {
     const cost = (spawnLevel + 1) * 35;
-    if (score >= cost && spawnLevel < 4) {
+    if (score >= cost && spawnLevel < 10) {
       setScore(score - cost);
       setSpawnLevel(spawnLevel + 1);
       playSound('buy');
@@ -473,11 +487,11 @@ function App() {
         <button className="menu-open-btn" onClick={() => setIsMenuVisible(true)}>MENU</button>
       </div>
 
-      <div className={`ui-panel-overlay ${isMenuVisible ? 'visible' : ''}`}>
-        <div className="ui-panel">
+      <div className={`ui-panel-overlay ${isMenuVisible ? 'visible' : ''}`} onClick={() => setIsMenuVisible(false)}>
+        <div className="ui-panel" onClick={e => e.stopPropagation()}>
           <div className="panel-header">
-            <h1 style={{ fontSize: '14px', margin: 0 }}>PAUSED</h1>
-            <button className="close-panel-btn" onClick={() => setIsMenuVisible(false)}>RESUME</button>
+            <h1 style={{ fontSize: '14px', margin: 0 }}>MENU</h1>
+            <button className="close-panel-btn" onClick={() => setIsMenuVisible(false)}>PLAY</button>
           </div>
           <div className="tab-buttons" style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
             <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>SHOP</button>
@@ -533,16 +547,21 @@ function App() {
               <p style={{ fontSize: '10px', margin: '10px 0' }}>SCORE: {score}</p>
 
               <div className="shop-list">
-                {!hasCat ? (
-                  <button className="shop-btn" onClick={buyCat} disabled={score < 30}>
-                    ADOPT CAT (30)
-                  </button>
-                ) : (
-                  <p className="status-text">CAT ACTIVE (60% Luck)</p>
-                )}
+                <div className="cat-upgrade-section" style={{ borderBottom: '2px dashed #ff1493', paddingBottom: '10px' }}>
+                  <p style={{ fontSize: '8px', marginBottom: '8px' }}>CAT TIER:</p>
+                  {catTier < CAT_TIERS.length - 1 ? (
+                    <button className="shop-btn" onClick={buyCat} disabled={score < CAT_TIERS[hasCat ? catTier + 1 : 0].cost}>
+                      {CAT_TIERS[hasCat ? catTier + 1 : 0].name} ({CAT_TIERS[hasCat ? catTier + 1 : 0].cost})
+                      <br /><span style={{ fontSize: '6px' }}>LUCK: {Math.round(CAT_TIERS[hasCat ? catTier + 1 : 0].luck * 100)}%</span>
+                    </button>
+                  ) : (
+                    <p className="status-text">ULTIMATE CAT UNLOCKED!</p>
+                  )}
+                  {hasCat && <p style={{ fontSize: '6px', textAlign: 'center', marginTop: '5px' }}>CURRENT: {CAT_TIERS[catTier].name}</p>}
+                </div>
 
-                <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 4}>
-                  MORE HEARTS ({(spawnLevel + 1) * 35})
+                <button className="shop-btn" onClick={buySpawn} disabled={score < (spawnLevel + 1) * 35 || spawnLevel >= 10}>
+                  {spawnLevel >= 8 ? 'HEART WATERFALL!!!' : 'MORE HEARTS'} ({(spawnLevel + 1) * 35})
                 </button>
 
                 <button className="shop-btn" onClick={buySpeed} disabled={score < (speedLevel + 1) * 50 || speedLevel >= 4}>
@@ -631,7 +650,7 @@ function App() {
 
       {hasCat && (
         <div
-          className={`cat-container ${isCatCatching ? 'cat-running' : ''}`}
+          className={`cat-container ${isCatCatching ? 'cat-running' : ''} ${CAT_TIERS[catTier].class}`}
           style={{
             left: `${catX}%`,
             transform: `scaleX(${catFlip})`

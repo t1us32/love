@@ -510,37 +510,50 @@ body {
   object-fit: contain;
 }
 
-/* Modal Panel Styles */
+/* Bottom Drawer Styles */
 .ui-panel-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: none;
-  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  /* Align to bottom */
   justify-content: center;
   z-index: 200;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 .ui-panel-overlay.visible {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .ui-panel {
   background: #fff;
   padding: 20px;
   border: 4px solid #ff1493;
-  width: 90%;
-  max-width: 400px;
-  max-height: 85vh;
+  border-bottom: none;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px -8px 0px rgba(0, 0, 0, 0.1);
   color: #ff1493;
   display: flex;
   flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 20px 20px 0 0;
+}
+
+.ui-panel-overlay.visible .ui-panel {
+  transform: translateY(0);
 }
 
 .panel-header {
